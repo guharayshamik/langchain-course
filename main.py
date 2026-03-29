@@ -2,8 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
@@ -29,16 +29,25 @@ Musk was the largest donor in the 2024 U.S. presidential election, where he supp
     summary_prompt_template = PromptTemplate(
         input_variables=["information"], template=summary_template
     )  # define prompt template object
+    # input_variables set which which variable in the template string need to be filled with actual value
 
     llm = ChatOpenAI(temperature=0, model="gpt-5")  # to make call to openai API
-    #llm = ChatOllama(temperature=0, model="gemma3:270m")
+    # llm = ChatOllama(temperature=0, model="gemma3:270m")
 
-    chain = summary_prompt_template | llm  # LCEL
-    response = chain.invoke(input={"information": information})
+    chain = (
+        summary_prompt_template | llm
+    )  # LCEL syntax like "|" used for better reusability
+    response = chain.invoke(
+        input={"information": information}
+    )  # invokes the entire chain; formats the prompt with the input, then sends it to them LLM
+
+    # In above inside chain object, the input director key must use exactly same
+    # variable name defined in input_variables. Since the template expects "information",
+    # we should pass information only not any other key names like "info" etc.
+    # Otherwise LangChain would raise an error be cause it cannot find the required input variable to substitute in the template,
 
     print(response.content)
 
 
 if __name__ == "__main__":
     main()
-
